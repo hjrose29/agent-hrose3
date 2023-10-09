@@ -4,6 +4,8 @@ package main
 import (
 	"fmt"
 	loggly "github.com/jamespearly/loggly"
+	"net/http"
+	"bufio"
 )
 
 func main() {
@@ -11,19 +13,22 @@ func main() {
 	var tag string
 	tag = "My-Go-Demo"
 
-	// Instantiate the client
 	client := loggly.New(tag)
 
-	// Valid EchoSend (message echoed to console and no error returned)
-	err := client.EchoSend("info", "Good morning!")
-	fmt.Println("err:", err)
+	resp, err := http.Get("https://developer.nps.gov/api/v1/activities/parks?parkCode=acad&api_key=HABe5chvX4Zswp47KAZ5WvDriLUtSXdmqm88dEpA")
 
-	// Valid Send (no error returned)
-	err = client.Send("error", "Good morning! No echo.")
-	fmt.Println("err:", err)
+	scanner := bufio.NewScanner(resp.Body)
+    for i := 0; scanner.Scan() && i < 1000; i++ {
+        fmt.Println(scanner.Text())
+    }
 
-	// Invalid EchoSend -- message level error
-	err = client.EchoSend("blah", "blah")
-	fmt.Println("err:", err)
+	if err != nil {
+		err := client.EchoSend("error", "err")
+		fmt.Println("err:", err)
+    }
+	if resp != nil{
+		resp := client.EchoSend("info", "resp")
+		fmt.Println("resp:", resp)
+	}
 
 }
