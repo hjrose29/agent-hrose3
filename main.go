@@ -1,34 +1,76 @@
-// This package is used to test the Loggly package
 package main
 
 import (
+	"flag"
 	"fmt"
-	loggly "github.com/jamespearly/loggly"
+	"log"
 	"net/http"
-	"bufio"
+	"encoding/json"
+	"time"
 )
 
+type NewsRelease struct {
+	Title       string `json:"title"`
+	RevisedDate string `json:"revisedDate"`
+	Abstract    string `json:"abstract"`
+}
+
+type Response struct {
+	Data []NewsRelease `json:"data"`
+}
+
 func main() {
+	var apiKey string
+	var i int
 
-	var tag string
-	tag = "My-Go-Demo"
+	flag.StringVar(&apiKey, "apikey", "", "API key for the National Park API")
+	flag.IntVar(&i, "i", 5, "Time Interval (5 for 5 seconds)")
+	flag.Parse()
 
-	client := loggly.New(tag)
-
-	resp, err := http.Get("https://developer.nps.gov/api/v1/activities/parks?parkCode=acad&api_key=HABe5chvX4Zswp47KAZ5WvDriLUtSXdmqm88dEpA")
-
-	scanner := bufio.NewScanner(resp.Body)
-    for i := 0; scanner.Scan() && i < 1000; i++ {
-        fmt.Println(scanner.Text())
-    }
-
-	if err != nil {
-		err := client.EchoSend("error", "err")
-		fmt.Println("err:", err)
-    }
-	if resp != nil{
-		resp := client.EchoSend("info", "resp")
-		fmt.Println("resp:", resp)
+	if apiKey == "" {
+		fmt.Println("API key is required. Use -apikey flag to specify it.")
+		return
 	}
 
+	address := "https://developer.nps.gov/api/v1/newsreleases?api_key=" + apiKey
+
+	// Create a timer to fetch data at regular intervals.
+	ticker := time.NewTicker(time.Duration(i) * time.Second) // Change the interval as needed.
+
+	for {
+		select {
+		case <-ticker.C:
+			err := fetchData(address)
+			if err != nil {
+				log.Printf("Error: %v", err)
+			}
+		}
+	}
+}
+
+func fetchData(address string) error {
+	resp, err := http.Get(address)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("API returned a non-OK status: %d", resp.StatusCode)
+	}
+
+	var response Response
+	decoder := json.NewDecoder(resp.Body)
+
+	if err := decoder.Decode(&response); err != nil {
+		return fmt.Errorf("Error decoding JSON response: %v", err)
+	}
+
+	if len(response.Data) > 0 {
+		// Log the first data entry (article)
+		firstArticle := response.Data[0]
+		log.Printf("Title: %s\nRevised Date: %s\nAbstract: %s", firstArticle.Title, firstArticle.RevisedDate, firstArticle.Abstract)
+	}
+
+	return nil
 }
