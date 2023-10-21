@@ -2,12 +2,12 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
 	"github.com/PuerkitoBio/goquery"
 	"strconv"
+	"fmt"
 )
 
 type Datum struct {
@@ -33,11 +33,15 @@ func main() {
 					
 			
 					p := getStockPrice(stock)
+					s := fmt.Sprintf("%f", p)
 			
+					log.Println(s)
 					var datum Datum
 					datum.DateTime = time.Now()
 					datum.Price = p
 					datum.Ticker = stock
+
+					
 				}
 			}
 			
