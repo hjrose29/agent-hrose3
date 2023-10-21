@@ -17,42 +17,31 @@ type Datum struct {
 }
 
 func main() {
-	var apiKey string
 	var i int
 	stocks := [2]string{"AAPL", "SPY"}
 
-
-
-	flag.StringVar(&apiKey, "apikey", "", "API key")
 	flag.IntVar(&i, "i", 5, "Time Interval (5 for 5 seconds)")
 	flag.Parse()
 
-	if apiKey == "" {
-		fmt.Println("API key is required. Use -apikey flag to specify it.")
-		return
-	}
-
-	for _, stock := range stocks{
-		ticker := time.NewTicker(time.Duration(i) * time.Second)
+	ticker := time.NewTicker(time.Duration(i) * time.Second)
 
 		for{
 			select {
 			case <- ticker.C:
-				//Make Request
-				p := getStockPrice(stock)
 
-		
-				var datum Datum
-				datum.DateTime = time.Now()
-				datum.Price = p
-				datum.Ticker = stock
-				
-				log.Printf("Title: %s\nRevised Date: %s\nPrice: %s", datum.Ticker, datum.DateTime, datum.Price)			
+				for _, stock := range stocks{
+					
+			
+					p := getStockPrice(stock)
+			
+					var datum Datum
+					datum.DateTime = time.Now()
+					datum.Price = p
+					datum.Ticker = stock
+				}
 			}
 			
 		}
-
-	}
 }
 
 func getStockPrice(Ticker string)(float32) {

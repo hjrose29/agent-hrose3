@@ -24,4 +24,4 @@ COPY --from=build /build/main ./
 
 RUN pwd && find .
 
-CMD ["./main", "-apikey", "9PYvNX_bqMsfrDJg1jsdGXS81E94xc_U", "-i", "5"]
+CMD ["./main",  "-i", "5"]
