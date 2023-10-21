@@ -5,25 +5,25 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"encoding/json"
 	"time"
+	"github.com/PuerkitoBio/goquery"
+	"strconv"
 )
 
-type NewsRelease struct {
-	Title       string `json:"title"`
-	RevisedDate string `json:"revisedDate"`
-	Abstract    string `json:"abstract"`
-}
-
-type Response struct {
-	Data []NewsRelease `json:"data"`
+type Datum struct {
+	Ticker string
+	DateTime time.Time
+	Price float32
 }
 
 func main() {
 	var apiKey string
 	var i int
+	stocks := [2]string{"AAPL", "SPY"}
 
-	flag.StringVar(&apiKey, "apikey", "", "API key for the National Park API")
+
+
+	flag.StringVar(&apiKey, "apikey", "", "API key")
 	flag.IntVar(&i, "i", 5, "Time Interval (5 for 5 seconds)")
 	flag.Parse()
 
@@ -32,45 +32,51 @@ func main() {
 		return
 	}
 
-	address := "https://developer.nps.gov/api/v1/newsreleases?api_key=" + apiKey
+	for _, stock := range stocks{
+		ticker := time.NewTicker(time.Duration(i) * time.Second)
 
-	// Create a timer to fetch data at regular intervals.
-	ticker := time.NewTicker(time.Duration(i) * time.Second) // Change the interval as needed.
+		for{
+			select {
+			case <- ticker.C:
+				//Make Request
+				p := getStockPrice(stock)
 
-	for {
-		select {
-		case <-ticker.C:
-			err := fetchData(address)
-			if err != nil {
-				log.Printf("Error: %v", err)
+		
+				var datum Datum
+				datum.DateTime = time.Now()
+				datum.Price = p
+				datum.Ticker = stock
+				
+				log.Printf("Title: %s\nRevised Date: %s\nPrice: %s", datum.Ticker, datum.DateTime, datum.Price)			
 			}
+			
 		}
+
 	}
 }
 
-func fetchData(address string) error {
-	resp, err := http.Get(address)
-	if err != nil {
-		return err
+func getStockPrice(Ticker string)(float32) {
+	resp, err := http.Get("https://finance.yahoo.com/quote/" + Ticker)
+	if(err != nil){
+		log.Println(err)
 	}
+	
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("API returned a non-OK status: %d", resp.StatusCode)
+	
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
 	}
 
-	var response Response
-	decoder := json.NewDecoder(resp.Body)
+	marketPrice := doc.Find("[data-field=regularMarketPrice][data-symbol=" + Ticker + "]").Text()
 
-	if err := decoder.Decode(&response); err != nil {
-		return fmt.Errorf("Error decoding JSON response: %v", err)
+	if marketPrice == "" {
+		log.Fatalf("Can't Find Price...")
 	}
 
-	if len(response.Data) > 0 {
-		// Log the first data entry (article)
-		firstArticle := response.Data[0]
-		log.Printf("Title: %s\nRevised Date: %s\nAbstract: %s", firstArticle.Title, firstArticle.RevisedDate, firstArticle.Abstract)
+	//I love this format for if statements, it's essentially a try...catch
+	if float, err := strconv.ParseFloat(marketPrice, 32); err == nil {
+		return float32(float)
 	}
-
-	return nil
+	return float32(0)
 }
