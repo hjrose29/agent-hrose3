@@ -1,8 +1,9 @@
-## CSC482 - Software Deployment
+# CSC482 - Software Deployment - Agent Side
+## Go [here](https://github.com/hjrose29/server-hrose3) for the server implementation!
 
-Skills: GoLang, Docker, AWS(EC2, DynamoDB, IAM, Cloudwatch/trail)
+Skills: GoLang, Docker, AWS(EC2, DynamoDB, IAM, Cloudwatch/trail), Loggly, Web Scraping, RESTful API, JSON
 
-<b><ins>Accomplishments!</ins></b>
+<b><ins>What I did!</ins></b>
 
 <ol>
 <li>Built simple <ins>GoLang</ins> polling agent to query stock data from Polygon.io.</li>
@@ -13,3 +14,11 @@ Skills: GoLang, Docker, AWS(EC2, DynamoDB, IAM, Cloudwatch/trail)
 <li>Wrote scraped data into <ins>AWS DynamoDB</ins></li>
 <li>Utilized Solarwind's <ins>Loggly</ins> utility to monitor my agent once it's deployed on EC2</li>
 </ol>
+
+<br>
+
+<b><ins>Building Container</ins>:<b>
+docker build . -t <IMAGE_NAME>
+
+<b><ins>Running Container</ins>:<b><br>
+docker run -e LOGGLY_TOKEN=<LOGGLY_TOKEN> -e AWS_ACCESS_KEY_ID=<SECRET_TOKEN1> -e AWS_SECRET_ACCESS_KEY=<SECRET_TOKEN2> -e AWS_DEFAULT_REGION=<REGION> <IMAGE_NAME>
