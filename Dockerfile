@@ -24,4 +24,4 @@ COPY --from=build /build/main ./
 
 RUN pwd && find .
 
-CMD ["./main",  "-i", "5"]
+CMD ["./main",  "-i", "120"]

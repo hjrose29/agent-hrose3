@@ -13,3 +13,4 @@ Skills: GoLang, Docker, AWS(EC2, DynamoDB, IAM, Cloudwatch/trail)
 <li>Wrote scraped data into <ins>AWS DynamoDB</ins></li>
 <li>Utilized Solarwind's <ins>Loggly</ins> utility to monitor my agent once it's deployed on EC2</li>
 </ol>
+w
