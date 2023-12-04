@@ -1,7 +1,6 @@
 #First Stage
-
-
-FROM golang:latest AS build
+#Finds image from AWS public repo.
+FROM public.ecr.aws/docker/library/golang:latest AS build
 WORKDIR /build
 COPY . .
 
@@ -11,7 +10,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -o main .
 
 
 #Second stage
-FROM alpine:latest
+#From AWS public repo.
+FROM public.ecr.aws/docker/library/alpine:latest
 
 RUN apk update && \
     apk upgrade && \
@@ -24,4 +24,6 @@ COPY --from=build /build/main ./
 
 RUN pwd && find .
 
+
+#Runs binary with 
 CMD ["./main",  "-i", "120"]
